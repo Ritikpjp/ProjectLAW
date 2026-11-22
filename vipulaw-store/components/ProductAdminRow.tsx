@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { STATES } from "@/lib/states";
 
 type FileRow = { id: string; label: string; pageCount: number };
 type Props = {
   id: string; slug: string; title: string; description: string; status: string; price: number;
-  meta: string; files: FileRow[]; hasOrders: boolean;
+  meta: string; files: FileRow[]; hasOrders: boolean; state: string | null; stateWise: boolean;
 };
 
 const input = "w-full rounded-lg border border-line bg-white px-3 py-2 text-base outline-none focus:border-gold";
@@ -19,6 +20,7 @@ export default function ProductAdminRow(p: Props) {
   const [price, setPrice] = useState(String(p.price));
   const [title, setTitle] = useState(p.title);
   const [description, setDescription] = useState(p.description);
+  const [state, setState] = useState(p.state ?? "");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   async function call(url: string, init: RequestInit, okText?: string) {
@@ -52,7 +54,7 @@ export default function ProductAdminRow(p: Props) {
   }
 
   return (
-    <li className="rounded-xl border border-line bg-white p-4">
+    <li className="rounded-md border border-line bg-white p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate font-medium">{p.title}</p>
@@ -75,9 +77,17 @@ export default function ProductAdminRow(p: Props) {
           <div className="space-y-3">
             <label className="block text-sm font-medium">Title<input className={input} value={title} maxLength={140} onChange={(e) => setTitle(e.target.value)} /></label>
             <label className="block text-sm font-medium">Description<textarea className={input} rows={3} maxLength={2000} value={description} onChange={(e) => setDescription(e.target.value)} /></label>
+            {p.stateWise && (
+              <label className="block text-sm font-medium">State
+                <select className={input} value={state} onChange={(e) => setState(e.target.value)}>
+                  <option value="">General (not state-specific)</option>
+                  {STATES.map((s) => <option key={s.slug} value={s.slug}>{s.name}</option>)}
+                </select>
+              </label>
+            )}
             <div className="flex flex-wrap gap-2">
-              <button disabled={busy || title.trim().length < 3 || (title === p.title && description === p.description)}
-                onClick={() => patch({ title, description }, "Details saved.")} className="rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white disabled:opacity-40">Save details</button>
+              <button disabled={busy || title.trim().length < 3 || (title === p.title && description === p.description && state === (p.state ?? ""))}
+                onClick={() => patch({ title, description, ...(p.stateWise && { state }) }, "Details saved.")} className="rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white disabled:opacity-40">Save details</button>
               <Link href={`/p/${p.slug}`} className="rounded-lg border border-line px-4 py-2 text-sm">View product page</Link>
             </div>
           </div>

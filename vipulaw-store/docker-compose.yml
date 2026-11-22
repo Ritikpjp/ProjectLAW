@@ -1,0 +1,28 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env.production
+    environment:
+      DATABASE_URL: "file:/data/app.db"
+      STORAGE_DIR: "/data/storage"
+    volumes:
+      - app-data:/data
+    expose: ["3000"]
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on: [app]
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  app-data:
+  caddy-data:
+  caddy-config:

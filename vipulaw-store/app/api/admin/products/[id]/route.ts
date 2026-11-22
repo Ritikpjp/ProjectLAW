@@ -3,12 +3,14 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireAdmin, sameOrigin } from "@/lib/auth/session";
 import { deleteFile } from "@/lib/storage";
+import { STATE_SLUGS } from "@/lib/states";
 
 const patch = z.object({
   status: z.enum(["DRAFT", "PUBLISHED"]).optional(),
   priceRupees: z.number().int().min(1).max(100000).optional(),
   title: z.string().trim().min(3).max(140).optional(),
   description: z.string().trim().max(2000).optional(),
+  state: z.union([z.literal(""), z.enum(STATE_SLUGS)]).optional(),
 });
 
 async function guard() {
@@ -23,7 +25,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   const parsed = patch.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   const { id } = await ctx.params;
-  const { status, priceRupees, title, description } = parsed.data;
+  const { status, priceRupees, title, description, state } = parsed.data;
   try {
     await db.product.update({
       where: { id },
@@ -32,6 +34,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
         ...(priceRupees && { pricePaise: priceRupees * 100 }),
         ...(title && { title }),
         ...(description !== undefined && { description }),
+        ...(state !== undefined && { state: state || null }),
       },
     });
   } catch {

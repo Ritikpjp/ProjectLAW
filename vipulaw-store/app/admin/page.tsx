@@ -36,13 +36,9 @@ export default async function Admin() {
 
   return (
     <main>
-    <section className="hero-bg bg-navy relative overflow-hidden text-white">
-      <div className="dot-grid absolute inset-0" aria-hidden />
-      <div className="relative mx-auto max-w-5xl px-4 py-9">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d9b566]">Upload</p>
-        <h1 className="mt-1 font-serif text-3xl sm:text-4xl">Upload and manage</h1>
-        <p className="mt-1 text-sm text-white/70">Upload PDFs, set prices, publish titles and follow orders.</p>
-      </div>
+    <section className="mx-auto max-w-5xl px-4 pt-10 sm:pt-14">
+      <h1 className="font-serif text-3xl text-navy sm:text-4xl">Upload</h1>
+      <p className="mt-1 text-sm text-muted">Add titles, set prices, publish, and follow orders.</p>
     </section>
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
       <div className="grid gap-3 sm:grid-cols-3">
@@ -51,7 +47,7 @@ export default async function Admin() {
           ["Revenue", rupees(sales._sum.amountPaise ?? 0)],
           ["Registered users", String(users)],
         ].map(([k, v]) => (
-          <div key={k} className="rounded-2xl border border-line bg-white p-4">
+          <div key={k} className="rounded-lg border border-line bg-white p-4">
             <p className="text-xs uppercase tracking-wide text-muted">{k}</p>
             <p className="mt-1 font-serif text-2xl text-navy">{v}</p>
           </div>
@@ -59,7 +55,7 @@ export default async function Admin() {
       </div>
 
       <AdminUploadForm
-        exams={exams.map((e) => ({ id: e.id, name: e.name, sections: e.sections.map((s) => ({ id: s.id, name: s.name })) }))}
+        exams={exams.map((e) => ({ id: e.id, name: e.name, stateWise: e.stateWise, sections: e.sections.map((s) => ({ id: s.id, name: s.name })) }))}
         types={Object.entries(PRODUCT_TYPES) as [string, string][]}
       />
       <SectionManager exams={exams.map((e) => ({ id: e.id, name: e.name, sections: e.sections.map((s) => ({ id: s.id, name: s.name })) }))} />
@@ -69,7 +65,7 @@ export default async function Admin() {
         <ul className="mt-3 space-y-3">
           {products.map((p) => (
             <ProductAdminRow key={p.id} id={p.id} slug={p.slug} title={p.title} description={p.description} status={p.status}
-              price={p.pricePaise / 100} files={p.files} hasOrders={p._count.orders > 0}
+              price={p.pricePaise / 100} files={p.files} hasOrders={p._count.orders > 0} state={p.state} stateWise={p.exam.stateWise}
               meta={`${p.exam.name}${p.section ? " › " + p.section.name : ""} · ${typeLabel(p.type)} · ${p.files.length} file(s) · ${p._count.orders} order(s)`} />
           ))}
           {products.length === 0 && <li className="text-muted">No products yet.</li>}
