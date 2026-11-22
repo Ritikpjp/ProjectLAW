@@ -22,7 +22,7 @@ export default function SectionManager({ exams }: { exams: Exam[] }) {
   }
 
   return (
-    <details className="rounded-2xl border border-line bg-white p-5">
+    <details className="rounded-lg border border-line bg-white p-5">
       <summary className="cursor-pointer font-serif text-xl text-navy">Exam sections</summary>
       <p className="mt-2 text-sm text-muted">Sections split an exam into parts such as Prelims and Mains, or Paper 1 and Paper 2.</p>
       <ul className="mt-4 space-y-4">

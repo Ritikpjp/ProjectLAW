@@ -57,6 +57,7 @@ model Exam {
   blurb     String    @default("")
   sortOrder Int       @default(0)
   active    Boolean   @default(true)
+  stateWise Boolean   @default(false) // true: titles can be filed under a state (see lib/states.ts)
   sections  Section[]
   products  Product[]
 }
@@ -88,6 +89,7 @@ model Product {
   pricePaise   Int
   status       String        @default("DRAFT") // DRAFT | PUBLISHED
   stampProfile String        @default("HEADER") // HEADER | FOOTER
+  state        String? // state slug from lib/states.ts; null = general / all-India
   createdAt    DateTime      @default(now())
   files        ProductFile[]
   orders       Order[]

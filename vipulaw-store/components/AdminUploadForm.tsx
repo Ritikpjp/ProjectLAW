@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { STATES } from "@/lib/states";
 
-type Exam = { id: string; name: string; sections: { id: string; name: string }[] };
+type Exam = { id: string; name: string; stateWise: boolean; sections: { id: string; name: string }[] };
 
 const input = "mt-1 w-full rounded-lg border border-line bg-white px-3 py-2.5 text-base outline-none focus:border-gold";
 
@@ -12,7 +13,8 @@ export default function AdminUploadForm({ exams, types }: { exams: Exam[]; types
   const [examId, setExamId] = useState(exams[0]?.id ?? "");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  const sections = exams.find((e) => e.id === examId)?.sections ?? [];
+  const current = exams.find((e) => e.id === examId);
+  const sections = current?.sections ?? [];
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -30,7 +32,7 @@ export default function AdminUploadForm({ exams, types }: { exams: Exam[]; types
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4 rounded-2xl border border-line bg-white p-5">
+    <form onSubmit={submit} className="space-y-4 rounded-lg border border-line bg-white p-5">
       <h2 className="font-serif text-xl text-navy">Upload a new title</h2>
       <label className="block text-sm font-medium">Title<input name="title" required minLength={3} maxLength={140} className={input} /></label>
       <label className="block text-sm font-medium">Description<textarea name="description" rows={3} maxLength={2000} className={input} /></label>
@@ -46,6 +48,14 @@ export default function AdminUploadForm({ exams, types }: { exams: Exam[]; types
             {sections.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
         </label>
+        {current?.stateWise && (
+          <label className="block text-sm font-medium">State (optional)
+            <select name="state" className={input} key={`state-${examId}`} defaultValue="">
+              <option value="">General (not state-specific)</option>
+              {STATES.map((s) => <option key={s.slug} value={s.slug}>{s.name}</option>)}
+            </select>
+          </label>
+        )}
         <label className="block text-sm font-medium">Type
           <select name="type" className={input}>{types.map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
         </label>

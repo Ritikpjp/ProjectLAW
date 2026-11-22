@@ -1,9 +1,9 @@
 // Reports which integrations are configured. Run: npm run check-env
 import { readFileSync, existsSync } from "node:fs";
 
-const file = existsSync(".env.production") ? ".env.production" : ".env";
+const file = existsSync(".env.production") ? ".env.production" : existsSync(".env") ? ".env" : "(container environment)";
 const env = { ...Object.fromEntries(
-  readFileSync(file, "utf8").split(/\r?\n/).filter((l) => l && !l.startsWith("#") && l.includes("="))
+  (existsSync(file) ? readFileSync(file, "utf8") : "").split(/\r?\n/).filter((l) => l && !l.startsWith("#") && l.includes("="))
     .map((l) => { const i = l.indexOf("="); return [l.slice(0, i), l.slice(i + 1).replace(/^"|"$/g, "")]; })), ...process.env };
 
 const has = (...k) => k.every((x) => env[x]);

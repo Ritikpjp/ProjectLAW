@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireAdmin, sameOrigin } from "@/lib/auth/session";
 import { SELLABLE_TYPES } from "@/lib/catalog";
+import { STATE_SLUGS } from "@/lib/states";
 import { ingestPdfs } from "@/lib/pdf/ingest";
 
 export const maxDuration = 300;
@@ -16,6 +17,7 @@ const meta = z.object({
   type: z.enum(SELLABLE_TYPES as [string, ...string[]]),
   priceRupees: z.coerce.number().int().min(1).max(100000),
   stampProfile: z.enum(["HEADER", "FOOTER"]),
+  state: z.union([z.literal(""), z.enum(STATE_SLUGS)]).optional(),
   publish: z.enum(["on"]).optional(),
 });
 
@@ -52,6 +54,7 @@ export async function POST(req: Request) {
     data: {
       slug: `${slugify(m.title)}-${randomBytes(3).toString("hex")}`,
       title: m.title, description: m.description, examId: exam.id, sectionId: m.sectionId || null,
+      state: exam.stateWise && m.state ? m.state : null,
       type: m.type, pricePaise: m.priceRupees * 100, stampProfile: m.stampProfile,
       status: m.publish ? "PUBLISHED" : "DRAFT",
       files: { create: ingested.created },

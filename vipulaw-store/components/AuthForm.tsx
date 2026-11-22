@@ -9,7 +9,7 @@ type Variant = "customer" | "admin";
 const PROFESSIONS = ["Law student", "Practising advocate", "Judicial aspirant", "Working professional", "Other"];
 const YEARS = ["1st year", "2nd year", "3rd year", "4th year", "5th year", "Graduated", "Postgraduate"];
 
-const field = "w-full rounded-xl border border-line bg-white px-3.5 py-3 text-base outline-none transition focus:border-gold focus:ring-4 focus:ring-gold/15";
+const field = "w-full rounded-md border border-line bg-white px-3.5 py-3 text-base outline-none transition focus:border-gold";
 const label = "block text-sm font-medium text-ink";
 
 export default function AuthForm({
@@ -63,7 +63,7 @@ export default function AuthForm({
 
   return (
     <div className="w-full">
-      <h1 className="font-serif text-3xl text-navy">{title}</h1>
+      <h1 className="font-serif text-2xl text-navy sm:text-3xl">{title}</h1>
       <p className="mt-2 text-sm leading-relaxed text-muted">{sub}</p>
 
       {step === "details" ? (
@@ -80,7 +80,7 @@ export default function AuthForm({
           )}
           <label className={label}>Mobile number
             <div className="mt-1.5 flex">
-              <span className="flex items-center rounded-l-xl border border-r-0 border-line bg-gold-soft px-3.5 text-sm font-medium text-navy">+91</span>
+              <span className="flex items-center rounded-l-md border border-r-0 border-line bg-paper px-3.5 text-sm text-muted">+91</span>
               <input className={field + " rounded-l-none"} inputMode="numeric" required autoComplete="tel-national" placeholder="98765 43210" value={f.mobile} onChange={set("mobile")} />
             </div>
           </label>
@@ -103,13 +103,11 @@ export default function AuthForm({
                   {exams.map((x) => <option key={x.slug} value={x.slug}>{x.name}</option>)}
                 </select>
               </label>
-              <p className="rounded-xl bg-gold-soft/70 px-3.5 py-2.5 text-xs leading-relaxed text-navy/80">
-                Your name, mobile and a licence ID are printed on every PDF you buy, with a small QR code that proves the copy is yours.
-              </p>
+              <p className="text-xs leading-relaxed text-muted">Your name and a verification QR are printed on each PDF you buy.</p>
             </>
           )}
-          {error && <p role="alert" className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm text-red-700">{error}</p>}
-          <button disabled={busy} className={`w-full rounded-xl px-4 py-3.5 font-semibold transition disabled:opacity-60 ${primary}`}>
+          {error && <p role="alert" className="rounded-md bg-red-50 px-3.5 py-2.5 text-sm text-red-700">{error}</p>}
+          <button disabled={busy} className={`w-full rounded-md px-4 py-3 font-medium transition disabled:opacity-60 ${primary}`}>
             {busy ? "Sending…" : admin ? "Send admin code" : "Send code"}
           </button>
         </form>
@@ -117,8 +115,8 @@ export default function AuthForm({
         <form onSubmit={verify} className="mt-7 space-y-4">
           <p className="text-sm">Enter the 6-digit code sent to <b>+91 {f.mobile.replace(/\D/g, "").slice(-10)}</b>.</p>
           <input className={field + " text-center text-2xl tracking-[0.5em]"} inputMode="numeric" autoComplete="one-time-code" maxLength={6} required autoFocus value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} aria-label="One-time code" />
-          {error && <p role="alert" className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm text-red-700">{error}</p>}
-          <button disabled={busy || code.length !== 6} className={`w-full rounded-xl px-4 py-3.5 font-semibold transition disabled:opacity-60 ${primary}`}>
+          {error && <p role="alert" className="rounded-md bg-red-50 px-3.5 py-2.5 text-sm text-red-700">{error}</p>}
+          <button disabled={busy || code.length !== 6} className={`w-full rounded-md px-4 py-3 font-medium transition disabled:opacity-60 ${primary}`}>
             {busy ? "Checking…" : admin ? "Open admin console" : mode === "login" ? "Log in" : "Create account"}
           </button>
           <button type="button" className="w-full text-sm text-muted underline" onClick={() => { setStep("details"); setCode(""); setError(""); }}>
@@ -127,7 +125,7 @@ export default function AuthForm({
         </form>
       )}
 
-      <p className="mt-7 border-t border-line pt-5 text-center text-sm text-muted">
+      <p className="mt-6 border-t border-line pt-5 text-center text-sm text-muted">
         {admin ? (
           <>Not an administrator? <Link className="font-semibold text-navy underline" href="/login">Student login</Link></>
         ) : mode === "login" ? (

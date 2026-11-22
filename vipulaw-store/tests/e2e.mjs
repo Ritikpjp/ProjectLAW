@@ -55,11 +55,11 @@ if (s.r1 === 409) { // already registered from an earlier run: log in instead
 check("admin login via OTP", s.r2 === 200, JSON.stringify(s));
 
 const exams = await (await fetch(base + "/")).text();
-check("homepage lists 5 exams", ["Judiciary", "APO / ADPO / ADA / APP", "Law Officer", "UGC NET / JRF", "AIBE"].every((n) => exams.includes(n.replace("/", "/"))));
+check("homepage lists 4 exams", ["Judiciary", "APO / ADPO / ADA / APP", "Law Officer", "UGC NET / JRF"].every((n) => exams.includes(n.replace("/", "/"))));
 
 // --- upload (needs exam id: read from admin page HTML)
 const adminHtml = await (await admin.req("/admin")).text();
-check("admin page visible to admin", adminHtml.includes("Upload a new product"));
+check("admin page visible to admin", adminHtml.includes("Upload a new title"));
 const examId = (await prisma.exam.findUnique({ where: { slug: "judiciary" } })).id;
 const form = new FormData();
 form.set("title", `E2E Jurisprudence MCQs ${rnd}`);
@@ -152,7 +152,7 @@ check("verify page works", (await (await fetch(`${base}/v/${coj.orderId ? "VL-00
 // --- profile, search, admin management (prototype features)
 const jp = (c, path, method, json) => c.req(path, { method, json });
 check("profile page loads for buyer", (await buyer.req("/profile")).status === 200);
-check("buyer updates profile", (await jp(buyer, "/api/profile", "PATCH", { email: `asha${rnd}@example.com`, profession: "Practising advocate", examTarget: "aibe", yearOfStudy: "Graduated" })).status === 200);
+check("buyer updates profile", (await jp(buyer, "/api/profile", "PATCH", { email: `asha${rnd}@example.com`, profession: "Practising advocate", examTarget: "ugc-net-jrf", yearOfStudy: "Graduated" })).status === 200);
 check("profile rejects unknown exam", (await jp(buyer, "/api/profile", "PATCH", { email: `asha${rnd}@example.com`, profession: "Other", examTarget: "nope", yearOfStudy: "Graduated" })).status === 400);
 check("anonymous profile update refused", (await jp(anon, "/api/profile", "PATCH", {})).status === 401);
 

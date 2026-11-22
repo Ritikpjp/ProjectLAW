@@ -64,7 +64,7 @@ export default function PayButton({ productId, label, loggedIn }: { productId: s
 
   return (
     <div>
-      <button onClick={buy} disabled={busy} className="w-full rounded-xl bg-gold px-6 py-4 text-lg font-bold text-white shadow transition hover:brightness-110 disabled:opacity-60">
+      <button onClick={buy} disabled={busy} className="w-full rounded-md bg-gold px-6 py-4 text-lg font-bold text-white shadow transition hover:brightness-110 disabled:opacity-60">
         {busy ? "Please wait…" : label}
       </button>
       {error && <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}

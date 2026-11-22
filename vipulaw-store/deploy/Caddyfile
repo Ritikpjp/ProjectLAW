@@ -1,0 +1,9 @@
+{$DOMAIN}, www.{$DOMAIN} {
+	@www host www.{$DOMAIN}
+	redir @www https://{$DOMAIN}{uri} permanent
+	encode gzip zstd
+	request_body {
+		max_size 120MB
+	}
+	reverse_proxy app:3000
+}

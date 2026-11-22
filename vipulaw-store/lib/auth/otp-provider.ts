@@ -11,6 +11,13 @@ const consoleProvider: OtpProvider = {
   },
 };
 
+const adminOnlyConsoleProvider: OtpProvider = {
+  async send(mobile, code) {
+    if (!env.adminMobiles.includes(mobile)) throw new Error("Sign-ups are not open yet");
+    console.log(`[OTP:admin-preview] ${mobile} -> ${code}`);
+  },
+};
+
 /** Meta WhatsApp Cloud API using an approved *authentication* template. */
 const metaProvider: OtpProvider = {
   async send(mobile, code) {
@@ -42,6 +49,11 @@ const metaProvider: OtpProvider = {
 
 export function getOtpProvider(): OtpProvider {
   if (env.otpProvider === "meta") return metaProvider;
-  if (env.isProd) throw new Error("OTP_PROVIDER must be a real provider in production");
+  if (env.isProd) {
+    // Pre-launch only: before WhatsApp is approved, admins can still log in (codes appear in the server log).
+    // Customers get no code, so nobody else can sign up until a real provider is configured.
+    if (process.env.ALLOW_CONSOLE_OTP_FOR_ADMINS === "true") return adminOnlyConsoleProvider;
+    throw new Error("OTP_PROVIDER must be a real provider in production");
+  }
   return consoleProvider;
 }
