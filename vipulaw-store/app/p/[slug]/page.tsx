@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { getUser } from "@/lib/auth/session";
-import { rupees, typeLabel } from "@/lib/catalog";
+import { priceLabel, typeLabel } from "@/lib/catalog";
 import { stateName } from "@/lib/states";
 import PayButton from "@/components/PayButton";
 
@@ -16,6 +16,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (!product) notFound();
 
   const owned = user ? await db.order.findFirst({ where: { userId: user.id, productId: product.id, status: "PAID" } }) : null;
+  const free = product.pricePaise === 0;
   const pages = product.files.reduce((n, f) => n + f.pageCount, 0);
   const meta = [product.exam.name, stateName(product.state), product.section?.name, typeLabel(product.type)].filter(Boolean).join(" · ");
 
@@ -50,17 +51,17 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
         <aside className="order-first lg:order-none lg:sticky lg:top-20 lg:self-start">
           <div className="rounded-xl border border-line bg-white p-5 shadow-sm">
-            <p className="font-serif text-3xl text-navy">{rupees(product.pricePaise)}</p>
-            <p className="mt-1 text-sm text-muted">One-time payment. Instant download.</p>
+            <p className="font-serif text-3xl text-navy">{priceLabel(product.pricePaise)}</p>
+            <p className="mt-1 text-sm text-muted">{free ? "Free with your account. Instant download." : "One-time payment. Instant download."}</p>
             <div className="mt-5">
               {user?.role === "ADMIN" ? (
                 <p className="rounded-md bg-gold-soft px-3 py-3 text-sm text-navy">
-                  Admins can&apos;t buy. <Link href="/admin" className="underline">Edit this title in Upload.</Link>
+                  Admins can&apos;t {free ? "claim" : "buy"}. <Link href="/admin" className="underline">Edit this title in Upload.</Link>
                 </p>
               ) : owned ? (
                 <Link href="/library" className="block w-full rounded-md bg-green-700 px-6 py-3.5 text-center font-medium text-white hover:bg-green-800">In your library</Link>
               ) : (
-                <PayButton productId={product.id} loggedIn={!!user} label={user ? "Buy now" : "Log in to buy"} />
+                <PayButton productId={product.id} loggedIn={!!user} label={free ? (user ? "Get it free" : "Log in to get it free") : user ? "Buy now" : "Log in to buy"} />
               )}
             </div>
             <p className="mt-4 text-xs leading-relaxed text-muted">

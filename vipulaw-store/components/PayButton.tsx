@@ -38,6 +38,7 @@ export default function PayButton({ productId, label, loggedIn }: { productId: s
       if (!res.ok) { setError(j.error ?? "Could not start payment."); setBusy(false); return; }
 
       const done = () => { router.push("/library?paid=1"); router.refresh(); };
+      if (j.free) { router.push("/library?free=1"); router.refresh(); return; }
 
       if (j.fake) { // local development only
         await post("/api/checkout/dev-pay", { razorpayOrderId: j.razorpayOrderId });

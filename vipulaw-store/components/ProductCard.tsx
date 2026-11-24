@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { rupees, typeLabel } from "@/lib/catalog";
+import { priceLabel, typeLabel } from "@/lib/catalog";
 import { stateName } from "@/lib/states";
 
 export type CardProduct = {
@@ -17,7 +17,7 @@ export default function ProductCard({ p }: { p: CardProduct }) {
       <h3 className="mt-2 font-serif text-lg leading-snug text-navy">{p.title}</h3>
       {p.description && <p className="mt-2 line-clamp-2 flex-1 text-sm text-muted">{p.description}</p>}
       <p className="mt-4 flex items-baseline justify-between border-t border-line pt-3">
-        <span className="font-medium text-navy">{rupees(p.pricePaise)}</span>
+        <span className={p.pricePaise === 0 ? "rounded-full border border-green-700 px-2.5 py-0.5 text-xs font-semibold text-green-700" : "font-medium text-navy"}>{priceLabel(p.pricePaise)}</span>
         {pages > 0 && <span className="text-xs text-muted">{pages} pages · free preview</span>}
       </p>
     </Link>

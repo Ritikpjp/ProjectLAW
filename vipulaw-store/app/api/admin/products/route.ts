@@ -15,7 +15,8 @@ const meta = z.object({
   examId: z.string().min(1).max(40),
   sectionId: z.string().max(40).optional(),
   type: z.enum(SELLABLE_TYPES as [string, ...string[]]),
-  priceRupees: z.coerce.number().int().min(1).max(100000),
+  priceRupees: z.coerce.number().int().min(0).max(100000).default(0),
+  free: z.enum(["on"]).optional(),
   stampProfile: z.enum(["HEADER", "FOOTER"]),
   state: z.union([z.literal(""), z.enum(STATE_SLUGS)]).optional(),
   publish: z.enum(["on"]).optional(),
@@ -32,6 +33,8 @@ export async function POST(req: Request) {
   const parsed = meta.safeParse(Object.fromEntries([...form.entries()].filter(([, v]) => typeof v === "string")));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid details" }, { status: 400 });
   const m = parsed.data;
+  if (!m.free && m.priceRupees < 1) return NextResponse.json({ error: "Enter a price, or tick Free." }, { status: 400 });
+  const price = m.free ? 0 : m.priceRupees;
 
   const uploads = form.getAll("files").filter((f): f is File => f instanceof File && f.size > 0);
   if (uploads.length === 0) return NextResponse.json({ error: "Attach at least one PDF." }, { status: 400 });
@@ -55,7 +58,7 @@ export async function POST(req: Request) {
       slug: `${slugify(m.title)}-${randomBytes(3).toString("hex")}`,
       title: m.title, description: m.description, examId: exam.id, sectionId: m.sectionId || null,
       state: exam.stateWise && m.state ? m.state : null,
-      type: m.type, pricePaise: m.priceRupees * 100, stampProfile: m.stampProfile,
+      type: m.type, pricePaise: price * 100, stampProfile: m.stampProfile,
       status: m.publish ? "PUBLISHED" : "DRAFT",
       files: { create: ingested.created },
     },

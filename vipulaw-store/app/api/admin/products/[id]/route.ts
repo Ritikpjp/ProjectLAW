@@ -7,7 +7,7 @@ import { STATE_SLUGS } from "@/lib/states";
 
 const patch = z.object({
   status: z.enum(["DRAFT", "PUBLISHED"]).optional(),
-  priceRupees: z.number().int().min(1).max(100000).optional(),
+  priceRupees: z.number().int().min(0).max(100000).optional(),
   title: z.string().trim().min(3).max(140).optional(),
   description: z.string().trim().max(2000).optional(),
   state: z.union([z.literal(""), z.enum(STATE_SLUGS)]).optional(),
@@ -31,7 +31,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       where: { id },
       data: {
         ...(status && { status }),
-        ...(priceRupees && { pricePaise: priceRupees * 100 }),
+        ...(priceRupees !== undefined && { pricePaise: priceRupees * 100 }),
         ...(title && { title }),
         ...(description !== undefined && { description }),
         ...(state !== undefined && { state: state || null }),

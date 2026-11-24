@@ -61,9 +61,9 @@ export default function ProductAdminRow(p: Props) {
           <p className="text-xs text-muted">{p.meta}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm">₹</span>
-          <input aria-label="Price in rupees" inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, ""))} className="w-24 rounded-lg border border-line px-2 py-1.5" />
-          <button disabled={busy || !price || Number(price) === p.price} onClick={() => patch({ priceRupees: Number(price) }, "Price saved.")} className="rounded-lg border border-navy px-3 py-1.5 text-sm text-navy disabled:opacity-40">Save price</button>
+          <span className="text-sm">{p.price === 0 ? "Free ·" : ""} ₹</span>
+          <input aria-label="Price in rupees (0 means free)" title="0 = free" inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, ""))} className="w-24 rounded-lg border border-line px-2 py-1.5" />
+          <button disabled={busy || price === "" || Number(price) === p.price} onClick={() => patch({ priceRupees: Number(price) }, "Price saved.")} className="rounded-lg border border-navy px-3 py-1.5 text-sm text-navy disabled:opacity-40">Save price</button>
           <button disabled={busy} onClick={() => patch({ status: p.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED" })}
             className={`rounded-lg px-3 py-1.5 text-sm font-semibold text-white ${p.status === "PUBLISHED" ? "bg-green-700" : "bg-slate-500"}`}>
             {p.status === "PUBLISHED" ? "Live · unpublish" : "Draft · publish"}
