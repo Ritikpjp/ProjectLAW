@@ -16,7 +16,7 @@ export default async function Admin() {
     if (!(await getUser())) redirect("/admin/login");
     notFound(); // logged in as a customer: nothing to see here
   }
-  const [exams, products, sales, users, orders] = await Promise.all([
+  const [exams, products, sales, users, freeClaims, orders] = await Promise.all([
     db.exam.findMany({ orderBy: { sortOrder: "asc" }, include: { sections: { orderBy: { sortOrder: "asc" } } } }),
     db.product.findMany({
       orderBy: { createdAt: "desc" },
@@ -26,10 +26,11 @@ export default async function Admin() {
         _count: { select: { orders: true } },
       },
     }),
-    db.order.aggregate({ where: { status: "PAID" }, _sum: { amountPaise: true }, _count: true }),
+    db.order.aggregate({ where: { status: "PAID", amountPaise: { gt: 0 } }, _sum: { amountPaise: true }, _count: true }),
     db.user.count(),
+    db.order.count({ where: { status: "PAID", amountPaise: 0 } }),
     db.order.findMany({
-      where: { status: "PAID" }, orderBy: { paidAt: "desc" }, take: 25,
+      where: { status: "PAID", amountPaise: { gt: 0 } }, orderBy: { paidAt: "desc" }, take: 25,
       include: { user: { select: { name: true, mobile: true, email: true } }, product: { select: { title: true } } },
     }),
   ]);
@@ -41,10 +42,11 @@ export default async function Admin() {
       <p className="mt-1 text-sm text-muted">Add titles, set prices, publish, and follow orders.</p>
     </section>
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
           ["Paid orders", String(sales._count)],
           ["Revenue", rupees(sales._sum.amountPaise ?? 0)],
+          ["Free downloads claimed", String(freeClaims)],
           ["Registered users", String(users)],
         ].map(([k, v]) => (
           <div key={k} className="rounded-lg border border-line bg-white p-4">

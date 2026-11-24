@@ -188,6 +188,36 @@ check("unordered product can be deleted", (await admin.req(`/api/admin/products/
 check("deleted product is gone from the DB", !(await prisma.product.findUnique({ where: { id: prod2.id } })));
 check("admin page lists the buyer", (await (await admin.req("/admin")).text()).includes("Asha Rao"));
 
+
+// --- free titles
+const ff = new FormData();
+for (const [k, v] of form.entries()) if (!["files", "title", "priceRupees"].includes(k)) ff.set(k, v);
+ff.set("title", `E2E Free Notes ${rnd}`); ff.set("free", "on");
+ff.append("files", new Blob([readFileSync(pdfPath)], { type: "application/pdf" }), "Free notes.pdf");
+const fup = await (await admin.req("/api/admin/products", { method: "POST", form: ff })).json();
+check("admin uploads a free title", !!fup.slug, JSON.stringify(fup));
+const noPrice = new FormData();
+for (const [k, v] of ff.entries()) if (k !== "free") noPrice.set(k, v);
+check("no price and not free is rejected", (await admin.req("/api/admin/products", { method: "POST", form: noPrice })).status === 400);
+const fprod = await prisma.product.findUnique({ where: { slug: fup.slug }, include: { files: true } });
+check("free title stored at price 0", fprod?.pricePaise === 0);
+check("product page shows Free", (await (await fetch(`${base}/p/${fup.slug}`)).text()).includes("Free with your account"));
+const freeList = await (await fetch(`${base}/exam/judiciary?access=free`)).text();
+const paidList = await (await fetch(`${base}/exam/judiciary?access=paid`)).text();
+check("Free filter lists free, hides paid", freeList.includes(`E2E Free Notes ${rnd}`) && !freeList.includes(`E2E Jurisprudence MCQs ${rnd}`));
+check("Paid filter lists paid, hides free", paidList.includes(`E2E Jurisprudence MCQs ${rnd}`) && !paidList.includes(`E2E Free Notes ${rnd}`));
+check("anonymous cannot claim free", (await anon.req("/api/checkout", { method: "POST", json: { productId: fprod.id } })).status === 401);
+check("admin cannot claim free", (await admin.req("/api/checkout", { method: "POST", json: { productId: fprod.id } })).status === 403);
+const claim = await buyer.req("/api/checkout", { method: "POST", json: { productId: fprod.id } });
+const claimJ = await claim.json();
+check("student claims free title", claim.status === 200 && claimJ.free === true, JSON.stringify(claimJ));
+check("cannot claim twice", (await buyer.req("/api/checkout", { method: "POST", json: { productId: fprod.id } })).status === 409);
+const fdl = await buyer.req(`/api/download/${claimJ.orderId}/${fprod.files[0].id}`);
+check("free file downloads stamped", fdl.status === 200 && Buffer.from(await fdl.arrayBuffer()).subarray(0, 5).toString() === "%PDF-");
+check("free claim not counted in recent paid orders", !(await (await admin.req("/admin")).text()).includes(`E2E Free Notes ${rnd}</td>`));
+check("admin makes a paid title free", (await jp(admin, `/api/admin/products/${pid}`, "PATCH", { priceRupees: 0 })).status === 200 && (await prisma.product.findUnique({ where: { id: pid } })).pricePaise === 0);
+await jp(admin, `/api/admin/products/${pid}`, "PATCH", { priceRupees: 199 });
+
 await prisma.$disconnect();
 console.log(failures ? `\n${failures} FAILED` : "\nALL PASSED");
 process.exit(failures ? 1 : 0);
